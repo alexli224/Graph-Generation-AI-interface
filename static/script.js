@@ -67,7 +67,7 @@ function sendMessage() {
 
         if (parsedData) {
             // Send user input and dataset info to the backend
-            fetch('https://graph-generation-ai-interface.onrender.com/query', {
+            fetch('https://graph-generation-ai-interface-1.onrender.com/query', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
