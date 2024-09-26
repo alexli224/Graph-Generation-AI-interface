@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Visualization Assistant</title>
+    <link rel="stylesheet" href="/static/style.css">
+    
+    <!-- Vega, Vega-Lite, and Vega-Embed scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    
+    <!-- D3.js script -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- File Upload and Preview -->
+        <div id="file-upload-section" class="file-upload-section">
+            <input type="file" id="fileInput" accept=".csv" />
+            <div id="dropArea" class="drop-zone">
+                <p>Drag and drop your CSV file here</p>
+            </div>
+            <div id="dataPreview"></div>
+        </div>
+
+        <!-- Chat title -->
+        <div class="chat-title">Data Visualization Assistant</div>
+
+        <!-- Chat history -->
+        <div id="chat-history" class="chat-history"></div>
+
+        <!-- Chart Area -->
+        <div id="chart"></div>
+
+        <!-- Chat input -->
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type a message..." />
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <!-- Custom script -->
+    <script src="/static/script.js"></script>
+</body>
+
+</html>
+
