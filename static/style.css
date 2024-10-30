@@ -128,6 +128,15 @@ button:hover {
     background-color: #7da389;
 }
 
+/* New style for the Clear button */
+#clear-button {
+    background-color: #e57373;
+}
+
+#clear-button:hover {
+    background-color: #c0392b;
+}
+
 .message-name {
     font-weight: bold;
     font-size: 12px; 
@@ -182,3 +191,36 @@ button:hover {
     text-decoration: underline;
     cursor: pointer;
 }
+
+/* Loading Icon Spinner */
+.loading-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Loading Icon Spinner in Bot Message */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-top-color: #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+
