@@ -120,7 +120,8 @@ function sendMessage() {
                 removeMessage(loadingMessageId);
                 
                 console.error('Error:', error);
-                addMessage('bot', 'An error occurred while processing your request.');
+                addMessage('bot', 'Your question does not seem to be related to the uploaded dataset.');
+              
             });
         } else {
             addMessage('bot', "Please upload a CSV file first.");
