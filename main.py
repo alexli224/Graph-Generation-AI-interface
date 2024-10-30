@@ -300,7 +300,7 @@ def handle_request(user_query, columns, dataTypes, sampleData, max_iterations=3)
     return {"type": "none", "description": "Your question does not relate to the dataset."}
 
 # Endpoint to interact with OpenAI API
-@app.post("/query", response_model=QueryResponse)
+@app.post("https://graph-generation-ai-interface-4.onrender.com/query", response_model=QueryResponse)
 async def query_openai(request: QueryRequest):
     try:
         result = handle_request(request.query, request.columns, request.dataTypes, request.FullData)
