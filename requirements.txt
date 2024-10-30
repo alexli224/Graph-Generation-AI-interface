@@ -31,5 +31,4 @@ urllib3==2.2.3
 uvicorn
 yarl==1.12.1
 pandas==1.5.3
-
-pandas  # Include pandas as well
+numpy==1.23.5 
