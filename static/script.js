@@ -1,4 +1,5 @@
 document.getElementById('send-button').addEventListener('click', sendMessage);
+document.getElementById('clear-button').addEventListener('click', clearMessages);
 document.getElementById('user-input').addEventListener('keydown', function (event) {
     if (event.key === 'Enter') {
         sendMessage();
@@ -59,6 +60,10 @@ function showDataPreview(data) {
     document.getElementById('dataPreview').innerHTML = tableHTML;
 }
 
+function removeMessage(element) {
+    element.remove();
+}
+
 // Send message to backend and handle response
 function sendMessage() {
     const userInput = document.getElementById('user-input').value.trim();
@@ -66,8 +71,10 @@ function sendMessage() {
         addMessage('user', userInput);
 
         if (parsedData) {
+            const loadingMessageId = addLoadingMessage("Working on it, this may take a few seconds...");
+
             // Send user input and dataset info to the backend
-            fetch('https://graph-generation-ai-interface-1.onrender.com/query', {
+            fetch('http://127.0.0.1:8000/query', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -76,20 +83,44 @@ function sendMessage() {
                     query: userInput,
                     columns: Object.keys(parsedData[0]),
                     dataTypes: getDataTypes(parsedData[0]),
-                    FullData: parsedData.slice(0, 15),  // Send first 5 rows as sample data
+                    FullData: parsedData.slice(0, 15),  // Send first 15 rows as sample data
                 }),
             })
             .then(response => response.json())
             .then(data => {
-                if (data.vega_spec && data.description) {
-                    addMessage('bot', data.description, data.vega_spec);  // Pass Vega spec to addMessage
+                removeMessage(loadingMessageId);
+
+                // Log the response from OpenAI to understand its "thinking process"
+                console.log("OpenAI Response:", data);
+
+
+                if (data.description) {
+                    addMessage('bot', data.description);
+                }
+                
+                // Check for the different types of responses
+                if (data.vega_spec) {
+                    addMessage('bot', "Here's the chart based on your request:", data.vega_spec);
+                }
+                
+                if (data.analysis_result.startsWith("<table")) {
+                    // If the response is HTML (like a table), render it using innerHTML
+                    addMessage('bot', `Here is the analysis result: ${data.analysis_result}`, null, true);
                 } else {
-                    addMessage('bot', 'Failed to generate the chart.');
+                    // If it's plain text, display it as text content
+                    addMessage('bot', `Here is the analysis result:\n${data.analysis_result}`);
+                }
+                
+
+                if (!data.vega_spec && !data.analysis_result && !data.description) {
+                    addMessage('bot', 'Your question does not seem to be related to the uploaded dataset.');
                 }
             })
             .catch((error) => {
+                removeMessage(loadingMessageId);
+                
                 console.error('Error:', error);
-                addMessage('bot', 'An error occurred while generating the chart.');
+                addMessage('bot', 'An error occurred while processing your request.');
             });
         } else {
             addMessage('bot', "Please upload a CSV file first.");
@@ -99,6 +130,14 @@ function sendMessage() {
     }
 }
 
+function clearMessages() {
+    const chatHistory = document.getElementById('chat-history');
+    while (chatHistory.firstChild) {
+        chatHistory.removeChild(chatHistory.firstChild);
+    }
+    console.log('Chat history cleared');
+    chatHistory.scrollTop = 0;
+}
 
 function getDataTypes(row) {
     const dataTypes = {};
@@ -115,7 +154,32 @@ function getDataTypes(row) {
     return dataTypes;
 }
 
-function addMessage(sender, text, chartSpec = null) {
+function addLoadingMessage(text) {
+    const chatHistory = document.getElementById('chat-history');
+    const loadingMessageElement = document.createElement('div');
+    const avatarElement = document.createElement('img');
+    const messageContentElement = document.createElement('div');
+
+    loadingMessageElement.classList.add('chat-message', 'bot-message');
+    avatarElement.classList.add('avatar');
+    avatarElement.src = 'https://img.rolandberger.com/content_assets/content_images/captions/Roland_Berger-24_2195_Humanoid_robots-IT_image_caption_none.jpg';
+    avatarElement.alt = 'Bot Avatar';
+
+    messageContentElement.classList.add('message-content');
+    messageContentElement.innerHTML = `
+        <p>${text}</p>
+        <div class="spinner"></div>
+    `;
+
+    loadingMessageElement.appendChild(avatarElement);
+    loadingMessageElement.appendChild(messageContentElement);
+    chatHistory.appendChild(loadingMessageElement);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+
+    return loadingMessageElement;
+}
+
+function addMessage(sender, text, chartSpec = null, isHTML = false) {
     const chatHistory = document.getElementById('chat-history');
     const messageElement = document.createElement('div');
     const avatarElement = document.createElement('img');
@@ -125,7 +189,12 @@ function addMessage(sender, text, chartSpec = null) {
     avatarElement.classList.add('avatar');
     messageContentElement.classList.add('message-content');
 
-    messageContentElement.textContent = text;
+    // Conditionally set HTML or text content based on the isHTML flag
+    if (isHTML) {
+        messageContentElement.innerHTML = text;  // Render as HTML
+    } else {
+        messageContentElement.textContent = text;  // Render as plain text
+    }
 
     if (sender === 'user') {
         messageElement.classList.add('user-message');
@@ -140,15 +209,13 @@ function addMessage(sender, text, chartSpec = null) {
     messageElement.appendChild(avatarElement);
     messageElement.appendChild(messageContentElement);
 
-    // If chartSpec is provided, append the chart to the message
     if (chartSpec) {
         const chartContainer = document.createElement('div');
         chartContainer.style.width = '100%';
         chartContainer.style.height = '300px';
-        chartContainer.style.marginTop = '10px'; // Space between the text and the chart
+        chartContainer.style.marginTop = '10px';
         messageContentElement.appendChild(chartContainer);
 
-        // Use Vega-Lite to render the chart inside the message content
         vegaEmbed(chartContainer, chartSpec)
             .catch((error) => {
                 console.error('Error rendering chart:', error);
@@ -160,17 +227,5 @@ function addMessage(sender, text, chartSpec = null) {
     chatHistory.scrollTop = chatHistory.scrollHeight;
 }
 
-
-
-function renderChart(spec) {
-    vegaEmbed('#chart', spec)
-        .then(() => {
-            document.getElementById('chart').style.display = 'block';  // Show the chart
-        })
-        .catch((error) => {
-            console.error('Error rendering chart:', error);
-            addMessage('bot', 'Failed to render the chart.');
-        });
-}
 
 
